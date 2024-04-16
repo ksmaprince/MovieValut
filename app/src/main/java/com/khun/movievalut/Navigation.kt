@@ -12,6 +12,7 @@ import com.khun.movievalut.Destinations.REGISTER_ROUTE
 import com.khun.movievalut.nav.MainScreen
 import com.khun.movievalut.ui.login.LoginScreen
 import com.khun.movievalut.ui.register.RegisterScreen
+import com.khun.movievalut.viewmodel.UserViewModel
 
 object Destinations {
     const val LOGIN_ROUTE = "login"
@@ -23,11 +24,13 @@ object Destinations {
 
 @Composable
 fun MovieVaultNavHost(
+    userViewModel: UserViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(navController = navController, startDestination = LOGIN_ROUTE) {
         composable(LOGIN_ROUTE) {
             LoginScreen(
+                userViewModel = userViewModel,
                 onLoginSubmitted = { _, _ ->
                     navController.navigate(MOVIE_HOME_ROUTE)
                 },
@@ -37,7 +40,10 @@ fun MovieVaultNavHost(
             )
         }
         composable(REGISTER_ROUTE) {
-            RegisterScreen(onRegisterSubmitted = { _, _ -> }) { navController.popBackStack() }
+            RegisterScreen(
+                userViewModel = userViewModel,
+                onRegisterSubmitted = { _, _ -> }
+            ) { navController.popBackStack() }
         }
 
         composable(MOVIE_HOME_ROUTE) {

@@ -52,12 +52,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.khun.movievalut.R
+import com.khun.movievalut.data.model.UserLoginRequest
 import com.khun.movievalut.ui.theme.MovieValutTheme
 import com.khun.movievalut.ui.theme.stronglyDeemphasizedAlpha
 import com.khun.movievalut.ui.util.supportWideScreen
+import com.khun.movievalut.viewmodel.UserViewModel
 
 @Composable
 fun LoginScreen(
+    userViewModel: UserViewModel,
     onLoginSubmitted: (email: String, password: String) -> Unit,
     onNewUser: ()-> Unit
 ) {
@@ -79,7 +82,7 @@ fun LoginScreen(
             ) {
                 Branding()
             }
-            LoginRegister(onLoginSubmitted)
+            LoginRegister(userViewModel, onLoginSubmitted)
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(
                 onClick = onNewUser,
@@ -130,7 +133,7 @@ fun Logo(
 }
 
 @Composable
-fun LoginRegister(onLoginSubmitted: (email: String, password: String) -> Unit){
+fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (email: String, password: String) -> Unit){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -154,10 +157,14 @@ fun LoginRegister(onLoginSubmitted: (email: String, password: String) -> Unit){
         Spacer(modifier = Modifier.height(16.dp))
 
         val passwordState = remember { PasswordState() }
-
+        userViewModel.userLoginResponse.observeForever {
+            if (it.email.equals(emailState.text)){
+                onLoginSubmitted(emailState.text, passwordState.text)
+            }
+        }
         val onSubmit = {
             if (emailState.isValid && passwordState.isValid) {
-                onLoginSubmitted(emailState.text, passwordState.text)
+                userViewModel.login(UserLoginRequest(emailState.text, passwordState.text))
             }
         }
         Password(
@@ -343,9 +350,9 @@ fun ErrorSnackbar(
 @Composable
 fun LoginScreenPreveiw(){
     MovieValutTheme {
-        LoginScreen(
-            onLoginSubmitted = { _, _ -> },
-            onNewUser = { -> },
-        )
+//        LoginScreen(
+//            onLoginSubmitted = { _, _ -> },
+//            onNewUser = { -> },
+//        )
     }
 }

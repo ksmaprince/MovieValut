@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -69,11 +71,24 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-
     //Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     //Material
     implementation("androidx.compose.material:material-icons-extended:1.6.5")
+
+    //Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.10.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.10.0")
+
+    //Interceptor
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12")
+
+    //Dagger-Hilt
+    implementation("com.google.dagger:hilt-android:2.51")
+    kapt("com.google.dagger:hilt-android-compiler:2.51")
+
+    //Glide-Compose
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 
 }

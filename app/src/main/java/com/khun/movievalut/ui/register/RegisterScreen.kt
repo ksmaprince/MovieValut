@@ -36,9 +36,11 @@ import com.khun.movievalut.ui.login.Password
 import com.khun.movievalut.ui.login.PasswordState
 import com.khun.movievalut.ui.theme.MovieValutTheme
 import com.khun.movievalut.ui.theme.stronglyDeemphasizedAlpha
+import com.khun.movievalut.viewmodel.UserViewModel
 
 @Composable
 fun RegisterScreen(
+    userViewModel: UserViewModel,
     onRegisterSubmitted: (email: String, password: String) -> Unit,
     onNavUp: () -> Unit,
 ) {
@@ -146,8 +148,8 @@ fun RegisterTopAppBar(
 @Composable
 fun SignUpPreview() {
     MovieValutTheme {
-        RegisterScreen(onRegisterSubmitted = { _, _ -> },) {
-            
-        }
+//        RegisterScreen(onRegisterSubmitted = { _, _ -> },) {
+//
+//        }
     }
 }
