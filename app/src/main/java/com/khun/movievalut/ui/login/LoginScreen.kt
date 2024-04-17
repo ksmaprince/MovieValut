@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.khun.movievalut.R
 import com.khun.movievalut.data.model.UserLoginRequest
+import com.khun.movievalut.data.model.UserLoginResponse
 import com.khun.movievalut.ui.theme.MovieValutTheme
 import com.khun.movievalut.ui.theme.stronglyDeemphasizedAlpha
 import com.khun.movievalut.ui.util.supportWideScreen
@@ -61,7 +63,7 @@ import com.khun.movievalut.viewmodel.UserViewModel
 @Composable
 fun LoginScreen(
     userViewModel: UserViewModel,
-    onLoginSubmitted: (email: String, password: String) -> Unit,
+    onLoginSubmitted: (userLoginResponse: UserLoginResponse) -> Unit,
     onNewUser: ()-> Unit
 ) {
     var showBranding by remember {
@@ -133,7 +135,7 @@ fun Logo(
 }
 
 @Composable
-fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (email: String, password: String) -> Unit){
+fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (UserLoginResponse) -> Unit){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -143,7 +145,6 @@ fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (email: String
         val emailState by rememberSaveable(stateSaver = EmailStateSaver) {
             mutableStateOf(EmailState(""))
         }
-
         Text(
             text = stringResource(id = R.string.sign_or_create_account),
             style = MaterialTheme.typography.bodyMedium,
@@ -157,11 +158,21 @@ fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (email: String
         Spacer(modifier = Modifier.height(16.dp))
 
         val passwordState = remember { PasswordState() }
-        userViewModel.userLoginResponse.observeForever {
-            if (it.email.equals(emailState.text)){
-                onLoginSubmitted(emailState.text, passwordState.text)
+        // State for showing error dialog
+        var showErrorDialog by remember { mutableStateOf(false) }
+
+        userViewModel.loginResult.observeForever {
+            it?.let {
+                if (it.isSuccess){
+                    it.getOrNull()?.let {
+                        onLoginSubmitted(it)
+                    }
+                }else{
+                    showErrorDialog = true
+                }
             }
         }
+
         val onSubmit = {
             if (emailState.isValid && passwordState.isValid) {
                 userViewModel.login(UserLoginRequest(emailState.text, passwordState.text))
@@ -185,7 +196,24 @@ fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (email: String
                 text = stringResource(id = R.string.login)
             )
         }
+
+        // Show error dialog
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                title = { Text("Login Failed") },
+                text = { Text("Login failed. Please try again.") },
+                confirmButton = {
+                    Button(
+                        onClick = { showErrorDialog = false }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
     }
+
 }
 
 @Composable

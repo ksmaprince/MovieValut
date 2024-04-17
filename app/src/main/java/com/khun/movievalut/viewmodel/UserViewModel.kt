@@ -11,23 +11,23 @@ import com.khun.movievalut.repository.UserRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class UserViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel(){
+class UserViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
 
-    private var _user = MutableLiveData<User>()
-    val user get() = _user
+    private var _userResult = MutableLiveData<Result<User>>()
+    val userResult: LiveData<Result<User>> get() = _userResult
 
-    private var _userLoginResponse = MutableLiveData<UserLoginResponse>()
-    val userLoginResponse get() = _userLoginResponse
+    private val _loginResult = MutableLiveData<Result<UserLoginResponse>>()
+    val loginResult: LiveData<Result<UserLoginResponse>> get() = _loginResult
 
     fun registerUser(user: User) {
         viewModelScope.launch {
-            _user.value = userRepository.createUser(user)
+            _userResult.value = userRepository.createUser(user)
         }
     }
 
-    fun login(userLoginRequest: UserLoginRequest){
+    fun login(userLoginRequest: UserLoginRequest) {
         viewModelScope.launch {
-            _userLoginResponse.value = userRepository.userLogin(userLoginRequest)
+            _loginResult.value = userRepository.userLogin(userLoginRequest)
         }
     }
 }

@@ -7,7 +7,5 @@ data class UserLoginRequest(
 data class UserLoginResponse(
     val userId: Long,
     val email: String,
-    val password: String,
-    val token: String,
-    val refreshToken: String
+    val jwtToken: String
 )

@@ -12,10 +12,11 @@ import com.khun.movievalut.ui.home.HomeScreen
 import com.khun.movievalut.ui.list.ListScreen
 import com.khun.movievalut.ui.profile.ProfileScreen
 import com.khun.movievalut.ui.search.SearchScreen
+import com.khun.movievalut.viewmodel.UserViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(navController: NavHostController = rememberNavController()) {
+fun MovieHomeWithBottomNav(userViewModel: UserViewModel, navController: NavHostController = rememberNavController()) {
     Scaffold(bottomBar = {
         BottomAppBar { BottomNavigationBar(navController = navController) }
     }) {

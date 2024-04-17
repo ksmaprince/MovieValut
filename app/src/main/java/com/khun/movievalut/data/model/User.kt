@@ -4,5 +4,6 @@ data class User(
     val userId: Long,
     val email: String,
     val password: String,
-    val profile: Profile
+    val profile: Profile,
+    val roleIds: List<Int>
 )

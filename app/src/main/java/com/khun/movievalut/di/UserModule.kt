@@ -17,7 +17,7 @@ object UserModule {
     @Provides
     fun provideRetrofit(): Retrofit{
         return Retrofit.Builder()
-            .baseUrl("http://192.168.4.94:8080/movievault/v1/api/")
+            .baseUrl("http://172.17.142.253:8080/movievault/v1/api/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
