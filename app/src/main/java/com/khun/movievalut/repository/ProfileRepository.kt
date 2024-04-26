@@ -1,6 +1,5 @@
 package com.khun.movievalut.repository
 
-import android.util.Log
 import com.khun.movievalut.data.model.Movie
 import com.khun.movievalut.data.model.Profile
 import com.khun.movievalut.data.model.UpdatePasswordRequest
@@ -30,7 +29,7 @@ class ProfileRepository @Inject constructor(private val profileService: ProfileS
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Can't add favourite movie"))
+                Result.failure(Exception("You may already added. Can't add it at the moment"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -68,13 +67,6 @@ class ProfileRepository @Inject constructor(private val profileService: ProfileS
     ): Result<UpdatePasswordResponse> {
         return try {
             val response = profileService.changePassword(token, passwordRequest = passwordRequest)
-            Log.d("Response message() >>>", response.message())
-            Log.d("Response code() >>>", response.code().toString())
-            Log.d("Response isSuccessful() >>>", response.isSuccessful().toString())
-            Log.d("Response errorBody() >>>", response.errorBody().toString())
-            Log.d("Response body() >>>", response.body().toString())
-            Log.d("Response headers() >>>", response.headers().toString())
-            Log.d("Response raw() >>>", response.raw().toString())
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {

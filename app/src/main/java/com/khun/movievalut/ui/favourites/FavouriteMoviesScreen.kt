@@ -50,7 +50,6 @@ fun FavouriteMoviesScreen(favouriteMovieViewModel: FavouriteMovieViewModel, navC
     Scaffold(bottomBar = {
         BottomAppBar { BottomNavigationBar(navController = navController) }
     }) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
             Column(modifier = Modifier.padding(innerPadding)) {
                 var movies by remember {
                     mutableStateOf(listOf<Movie>())
@@ -94,7 +93,6 @@ fun FavouriteMoviesScreen(favouriteMovieViewModel: FavouriteMovieViewModel, navC
                         isShowLoading = false
                     }
                 }
-            }
         }
     }
 
