@@ -32,40 +32,49 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.khun.movievalut.R
 import com.khun.movievalut.data.model.Profile
+import com.khun.movievalut.data.model.RegisterUserResponse
 import com.khun.movievalut.data.model.User
+import com.khun.movievalut.deligation.RegisterUserState
 import com.khun.movievalut.ui.login.ConfirmPasswordState
 import com.khun.movievalut.ui.login.Email
 import com.khun.movievalut.ui.login.EmailState
 import com.khun.movievalut.ui.login.Password
 import com.khun.movievalut.ui.login.PasswordState
-import com.khun.movievalut.ui.theme.MovieValutTheme
 import com.khun.movievalut.ui.theme.stronglyDeemphasizedAlpha
 import com.khun.movievalut.ui.util.ROLE_USER
-import com.khun.movievalut.viewmodel.UserViewModel
+import com.khun.movievalut.ui.util.SecretKey
+import com.khun.movievalut.ui.util.encryptPassword
+import com.khun.movievalut.ui.util.showDialog
+import com.khun.movievalut.ui.util.showLoadingDialog
+import com.khun.movievalut.viewmodel.RegisterViewModel
 
 @Composable
 fun RegisterScreen(
-    userViewModel: UserViewModel,
-    onRegisterSubmitted: (User) -> Unit,
-    onNavUp: () -> Unit,
+    registerViewModel: RegisterViewModel,
+    navController: NavController
 ) {
     Scaffold(
         topBar = {
             RegisterTopAppBar(
                 topAppBarText = stringResource(id = R.string.create_account),
-                onNavUp = onNavUp,
+                onNavUp = {
+                    registerViewModel.setRegisterUserStateEmpty()
+                    navController.popBackStack()
+                },
             )
         },
         content = { contentPadding ->
             Column(Modifier.padding(contentPadding)) {
                 RegisterContent(
-                    userViewModel = userViewModel,
-                    onRegisterSubmitted = onRegisterSubmitted
-                )
+                    registerViewModel = registerViewModel
+                ) {
+                    registerViewModel.setRegisterUserStateEmpty()
+                    navController.popBackStack()
+                }
             }
         }
     )
@@ -74,8 +83,8 @@ fun RegisterScreen(
 
 @Composable
 fun RegisterContent(
-    userViewModel: UserViewModel,
-    onRegisterSubmitted: (User) -> Unit,
+    registerViewModel: RegisterViewModel,
+    onRegisterSubmitted: (RegisterUserResponse) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -94,24 +103,79 @@ fun RegisterContent(
         val passwordState = remember { PasswordState() }
         val confirmPasswordState = remember { ConfirmPasswordState(passwordState = passwordState) }
 
-        userViewModel.userResult.observeForever {
-            it?.let {
-                it.getOrNull()?.let {
-                    onRegisterSubmitted(it)
+        var title by remember {
+            mutableStateOf("")
+        }
+        var message by remember {
+            mutableStateOf("")
+        }
+        var isShowLoading by remember {
+            mutableStateOf(false)
+        }
+        var showSuccessDialog by remember { mutableStateOf(false) }
+        var showErrorDialog by remember { mutableStateOf(false) }
+
+        var user = remember {
+            RegisterUserResponse()
+        }
+
+
+        val onSubmit = {
+            val profile = Profile(0, fullName, contactNo, "")
+            val email = emailState.text
+            val password = encryptPassword(SecretKey, passwordState.text)
+            registerViewModel.registerUser(
+                User(0, email, password, profile, ROLE_USER)
+            )
+        }
+
+        registerViewModel.registerUserState.observeForever {
+            when (it) {
+                is RegisterUserState.Loading -> {
+                    isShowLoading = true
+                }
+
+                is RegisterUserState.Success -> {
+                    user = it.registerUserResponse
+                    title = "Registration Success"
+                    message = "Congratulation, Your account is successfully created."
+                    isShowLoading = false
+                    showSuccessDialog = true
+                    showErrorDialog = false
+                }
+
+                is RegisterUserState.Error -> {
+                    registerViewModel.setRegisterUserStateEmpty()
+                    title = "Registration Fail"
+                    message = "Fail: ${it.message}"
+                    isShowLoading = false
+                    showSuccessDialog = false
+                    showErrorDialog = true
+                }
+
+                is RegisterUserState.Empty -> {
                 }
             }
         }
 
-        val onSubmit = {
-            val profile = Profile(0, fullName, contactNo, "")
-            userViewModel.registerUser(
-                User(
-                    0, emailState.text, passwordState.text, profile, arrayListOf(
-                        ROLE_USER
-                    )
-                )
-            )
+        if (showSuccessDialog) {
+            showDialog(title = title, message = message) {
+                showSuccessDialog = false
+                onRegisterSubmitted(user)
+            }
         }
+        if (showErrorDialog) {
+            showDialog(title = title, message = message) {
+                registerViewModel.setRegisterUserStateEmpty()
+                showErrorDialog = false
+            }
+        }
+        if (isShowLoading) {
+            showLoadingDialog(message = "") {
+                isShowLoading = false
+            }
+        }
+
 
         OutlinedTextField(
             value = fullName,
@@ -194,9 +258,9 @@ fun RegisterContent(
         ) {
             Text(text = stringResource(R.string.create_account))
         }
-
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class) // CenterAlignedTopAppBar is experimental in m3
 @Composable
@@ -227,14 +291,4 @@ fun RegisterTopAppBar(
             Spacer(modifier = Modifier.width(68.dp))
         },
     )
-}
-
-@Preview(widthDp = 1024)
-@Composable
-fun SignUpPreview() {
-    MovieValutTheme {
-//        RegisterScreen(onRegisterSubmitted = { _, _ -> },) {
-//
-//        }
-    }
 }

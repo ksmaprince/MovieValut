@@ -22,4 +22,10 @@
     <string name="back">Back</string>
     <string name="full_name">Full Name</string>
     <string name="mobile_number">Mobile Number</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="change_password">Change Password</string>
+    <string name="logout">Logout</string>
+    <string name="current_password">Current Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="new_password">New Password</string>
 </resources>

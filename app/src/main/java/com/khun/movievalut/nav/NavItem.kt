@@ -19,4 +19,5 @@ sealed class NavItem {
     object Profile :
         Item(
             path = NavPath.PROFILE.toString(), title = NavTitle.PROFILE, icon = Icons.Default.Person)
+
 }

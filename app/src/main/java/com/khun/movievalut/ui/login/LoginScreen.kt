@@ -1,6 +1,9 @@
 package com.khun.movievalut.ui.login
 
+import android.app.Activity
 import android.content.res.Configuration
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -18,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +46,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -52,26 +56,56 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.khun.movievalut.Destinations
 import com.khun.movievalut.R
 import com.khun.movievalut.data.model.UserLoginRequest
 import com.khun.movievalut.data.model.UserLoginResponse
+import com.khun.movievalut.deligation.LoginState
 import com.khun.movievalut.ui.theme.MovieValutTheme
 import com.khun.movievalut.ui.theme.stronglyDeemphasizedAlpha
+import com.khun.movievalut.ui.util.SecretKey
+import com.khun.movievalut.ui.util.encryptPassword
+import com.khun.movievalut.ui.util.showDialog
+import com.khun.movievalut.ui.util.showLoadingDialog
+import com.khun.movievalut.ui.util.showToastMessage
 import com.khun.movievalut.ui.util.supportWideScreen
-import com.khun.movievalut.viewmodel.UserViewModel
+import com.khun.movievalut.viewmodel.LoginViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    userViewModel: UserViewModel,
-    onLoginSubmitted: (userLoginResponse: UserLoginResponse) -> Unit,
-    onNewUser: ()-> Unit
+    loginViewModel: LoginViewModel,
+    navController: NavController
 ) {
-    var showBranding by remember {
+    var token by remember {
+        mutableStateOf("")
+    }
+
+    var userLoginResponse by remember {
+        mutableStateOf(UserLoginResponse())
+    }
+
+    loginViewModel.getToken()
+
+    loginViewModel.token.observeForever {
+        token = it
+    }
+
+    if (!token.isNullOrBlank()) {
+        loginViewModel.setLoginScreenEmpty()
+        navController.navigate(Destinations.MOVIE_HOME_ROUTE)
+    }
+
+    val showBranding by remember {
         mutableStateOf(true)
     }
+
     Scaffold(
         modifier = Modifier.supportWideScreen()
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -84,10 +118,18 @@ fun LoginScreen(
             ) {
                 Branding()
             }
-            LoginRegister(userViewModel, onLoginSubmitted)
+
+            LoginRegister(loginViewModel) {
+                loginViewModel.setLoginScreenEmpty()
+                navController.navigate(Destinations.MOVIE_HOME_ROUTE)
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(
-                onClick = onNewUser,
+                onClick = {
+                    loginViewModel.setLoginScreenEmpty()
+                    navController.navigate(Destinations.REGISTER_ROUTE)
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "New user? Register Now.")
@@ -135,7 +177,12 @@ fun Logo(
 }
 
 @Composable
-fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (UserLoginResponse) -> Unit){
+fun LoginRegister(loginViewModel: LoginViewModel, onLoginSubmitted: () -> Unit) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var firstBackPressed by remember {
+        mutableStateOf(false)
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -158,24 +205,44 @@ fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (UserLoginResp
         Spacer(modifier = Modifier.height(16.dp))
 
         val passwordState = remember { PasswordState() }
-        // State for showing error dialog
+        var isShowLoading by remember { mutableStateOf(false) }
         var showErrorDialog by remember { mutableStateOf(false) }
 
-        userViewModel.loginResult.observeForever {
-            it?.let {
-                if (it.isSuccess){
-                    it.getOrNull()?.let {
-                        onLoginSubmitted(it)
-                    }
-                }else{
+        var errorMessage by remember {
+            mutableStateOf("")
+        }
+
+        loginViewModel.loginState.observeForever {
+            when (it) {
+                is LoginState.Loading -> {
+                    isShowLoading = true
+                    showErrorDialog = false
+                }
+
+                is LoginState.Success -> {
+                    isShowLoading = false
+                    showErrorDialog = false
+                    onLoginSubmitted()
+                }
+
+                is LoginState.Error -> {
+                    loginViewModel.setLoginScreenEmpty()
+                    errorMessage = it.message
+                    isShowLoading = false
                     showErrorDialog = true
+                }
+
+                is LoginState.Empty -> {
+
                 }
             }
         }
 
         val onSubmit = {
             if (emailState.isValid && passwordState.isValid) {
-                userViewModel.login(UserLoginRequest(emailState.text, passwordState.text))
+                val email = emailState.text
+                val password = encryptPassword(SecretKey, passwordState.text)
+                loginViewModel.login(UserLoginRequest(email, password))
             }
         }
         Password(
@@ -196,21 +263,32 @@ fun LoginRegister(userViewModel: UserViewModel, onLoginSubmitted: (UserLoginResp
                 text = stringResource(id = R.string.login)
             )
         }
-
         // Show error dialog
         if (showErrorDialog) {
-            AlertDialog(
-                onDismissRequest = { showErrorDialog = false },
-                title = { Text("Login Failed") },
-                text = { Text("Login failed. Please try again.") },
-                confirmButton = {
-                    Button(
-                        onClick = { showErrorDialog = false }
-                    ) {
-                        Text("OK")
-                    }
+            showDialog("Login Fail", errorMessage) {
+                showErrorDialog = false
+                Log.d("DIALOG -->>>", "State Changes")
+            }
+        }
+
+        if (isShowLoading) {
+            showLoadingDialog(message = "Logging in ...") {
+                isShowLoading = false
+            }
+        }
+
+        BackHandler {
+            if (firstBackPressed) {
+                val activity = context as Activity
+                activity.finish()
+            } else {
+                firstBackPressed = true
+                showToastMessage(context = context, message = "Press again to exit")
+                coroutineScope.launch {
+                    delay(2000L)
+                    firstBackPressed = false
                 }
-            )
+            }
         }
     }
 
@@ -373,10 +451,11 @@ fun ErrorSnackbar(
             .wrapContentHeight(Alignment.Bottom)
     )
 }
+
 @Preview(name = "Login light theme", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Preview(name = "Login dark theme", uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
-fun LoginScreenPreveiw(){
+fun LoginScreenPreveiw() {
     MovieValutTheme {
 //        LoginScreen(
 //            onLoginSubmitted = { _, _ -> },

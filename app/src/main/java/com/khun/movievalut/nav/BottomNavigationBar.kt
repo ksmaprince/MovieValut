@@ -9,10 +9,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.navigation.NavHostController
-
+import androidx.navigation.NavController
 @Composable
-fun BottomNavigationBar(navController: NavHostController) {
+fun BottomNavigationBar(navController: NavController) {
     val navItems = listOf(NavItem.Home, NavItem.Search, NavItem.List, NavItem.Profile)
     var selectedItem by rememberSaveable { mutableStateOf(0) }
 

@@ -6,20 +6,32 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
 import com.khun.movievalut.ui.theme.MovieValutTheme
-import com.khun.movievalut.viewmodel.UserViewModel
+import com.khun.movievalut.viewmodel.FavouriteMovieViewModel
+import com.khun.movievalut.viewmodel.LoginViewModel
+import com.khun.movievalut.viewmodel.MovieViewModel
+import com.khun.movievalut.viewmodel.ProfileViewModel
+import com.khun.movievalut.viewmodel.RegisterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var loginViewModel: LoginViewModel
 
-    @Inject lateinit var userViewModel: UserViewModel
+    @Inject
+    lateinit var registerViewModel: RegisterViewModel
+
+    @Inject
+    lateinit var profileViewModel: ProfileViewModel
+
+    @Inject
+    lateinit var movieViewModel: MovieViewModel
+
+    @Inject
+    lateinit var favouriteMovieViewModel: FavouriteMovieViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -28,25 +40,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MovieVaultNavHost(userViewModel)
+                    MovieVaultNavHost(
+                        loginViewModel = loginViewModel,
+                        registerViewModel = registerViewModel,
+                        profileViewModel = profileViewModel,
+                        movieViewModel = movieViewModel,
+                        favouriteMovieViewModel = favouriteMovieViewModel
+                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MovieValutTheme {
-        Greeting("Android")
     }
 }
