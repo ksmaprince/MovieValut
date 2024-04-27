@@ -68,7 +68,7 @@ Frontend:
 
 
 
-## **Backend Project (Web App)**
+## **Backend Project (MovieVault Webservice App)**
 
 The backend Restful Webservice Project is developed by using **Spring Boot** for backend development, **Spring Security** for user authentication, and **Spring Data JPA** for data persistence. Furthermore, the project will implement _**MySQL**_ as the backend database, providing a structured foundation for seamless data management. 
-The sample project can be see on the [Github Link](https://github.com/ksmaprince/MovieValut-WebServices).
+The sample project can be see on the Github [here](https://github.com/ksmaprince/MovieValut-WebServices).
