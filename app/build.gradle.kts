@@ -90,6 +90,7 @@ dependencies {
 
     //Glide-Compose
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
 
     //Video Player
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.28")

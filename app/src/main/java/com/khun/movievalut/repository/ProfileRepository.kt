@@ -1,10 +1,12 @@
 package com.khun.movievalut.repository
 
+import android.util.Log
 import com.khun.movievalut.data.model.Movie
 import com.khun.movievalut.data.model.Profile
 import com.khun.movievalut.data.model.UpdatePasswordRequest
 import com.khun.movievalut.data.model.UpdatePasswordResponse
 import com.khun.movievalut.data.remote.ProfileService
+import okhttp3.MultipartBody
 import javax.inject.Inject
 
 class ProfileRepository @Inject constructor(private val profileService: ProfileService) {
@@ -52,6 +54,11 @@ class ProfileRepository @Inject constructor(private val profileService: ProfileS
     suspend fun updateProfileById(token: String, profile: Profile): Result<Profile> {
         return try {
             val response = profileService.updateProfileById(token, profile.profileId, profile)
+            Log.d("Response body()>>>>", response.body().toString())
+            Log.d("Response errorBody() >>>>", response.errorBody().toString())
+            Log.d("Response message()>>>>", response.message().toString())
+            Log.d("Response raw()>>>>", response.raw().toString())
+            Log.d("Response isSuccessful()>>>>", response.isSuccessful().toString())
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {
@@ -71,6 +78,24 @@ class ProfileRepository @Inject constructor(private val profileService: ProfileS
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Can't update your password"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateProfileImage(
+        token: String,
+        file: MultipartBody.Part,
+        profileId: Long
+    ): Result<Profile> {
+        return try {
+            val response = profileService.updateProfileImage(token, file, profileId)
+
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Can't update your profie image"))
             }
         } catch (e: Exception) {
             Result.failure(e)

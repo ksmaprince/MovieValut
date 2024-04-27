@@ -1,5 +1,6 @@
 package com.khun.movievalut.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,6 +15,10 @@ import com.khun.movievalut.ui.util.loginToken
 import com.khun.movievalut.ui.util.userEmail
 import com.khun.movievalut.ui.util.userProfileId
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import java.io.File
 import javax.inject.Inject
 
 class ProfileViewModel @Inject constructor(private val profileRepository: ProfileRepository) :
@@ -93,8 +98,43 @@ class ProfileViewModel @Inject constructor(private val profileRepository: Profil
                     _updatePasswordState.value = UpdatePasswordState.Error(it.message.toString())
                 }
             } else {
-                _editProfileState.value =
-                    EditProfileState.Error("Something went wrong with your user validation")
+                _updatePasswordState.value =
+                    UpdatePasswordState.Error("Something went wrong with your user validation")
+            }
+        }
+    }
+    fun uploadeImage(file: File) {
+        _profileState.value = ProfileState.Loading
+        Log.d("Upload Image>>> ", "Starting ....")
+        viewModelScope.launch {
+            if (userProfileId != 0L && !loginToken.isNullOrBlank()) {
+
+                val requestFile: RequestBody = RequestBody.create(
+                    "image/jpg".toMediaType(),
+                    file
+                )
+
+                val result = profileRepository.updateProfileImage(
+                    token = "Bearer $loginToken",
+                    profileId = userProfileId,
+                    file = MultipartBody.Part.createFormData(
+                        name = "file",
+                        filename = "${userProfileId}_image_${file.name}",
+                        body = requestFile
+                    )
+                )
+
+                result.onSuccess {
+                    Log.d("Upload Image>>> ", "Success ....")
+                    _profileState.value = ProfileState.Success(it)
+                }
+                result.onFailure {
+                    Log.d("Upload Image>>> ", "Fail With....${it.message}")
+                    _profileState.value = ProfileState.Error(it.message.toString())
+                }
+            } else {
+                _profileState.value =
+                    ProfileState.Error("Something went wrong with your user validation")
             }
         }
     }
@@ -117,4 +157,5 @@ class ProfileViewModel @Inject constructor(private val profileRepository: Profil
     fun setUpdatePasswordStateEmpty() {
         _updatePasswordState.value = UpdatePasswordState.Empty
     }
+
 }
