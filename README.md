@@ -16,22 +16,29 @@ A native android app developed with Jetpack Compose technology. The application 
 
 ### **Login & Create User Account**
 
+
 ![img.png](screens/login_create.png)
 
+<br/>
 
 ### **Create User Account/ Login Success & Home Screen**
 
 ![img.png](create_login_success_home.png)
 
+<br/>
+
 ### **Seeing Movie Trailer & Add to Favourite**
 
 ![img.png](seemovie_addfavourite.png)
+
+<br/>
 
 ### **Profile & Edit** 
 
 ![img.png](profile_edit_pwd.png)
 
 
+<br/>
 
 ## **Backend Project (MovieVault Webservice App)**
 
