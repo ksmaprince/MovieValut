@@ -19,6 +19,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 class ProfileViewModel @Inject constructor(private val profileRepository: ProfileRepository) :
@@ -114,12 +115,13 @@ class ProfileViewModel @Inject constructor(private val profileRepository: Profil
                     file
                 )
 
+                val currentTime = LocalDateTime.now()
                 val result = profileRepository.updateProfileImage(
                     token = "Bearer $loginToken",
                     profileId = userProfileId,
                     file = MultipartBody.Part.createFormData(
                         name = "file",
-                        filename = "${userProfileId}_image_${file.name}",
+                        filename = "${userProfileId}_${currentTime.toString()}_${file.name}",
                         body = requestFile
                     )
                 )
