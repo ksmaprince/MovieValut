@@ -22,7 +22,7 @@ object NetworkModule {
     @Provides
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://localhost:8080/movievault/v1/api/")//Published Base Url needed.
+            .baseUrl("https://movievault-webapp.azurewebsites.net/movievault/v1/api/")//Published Base Url needed.
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()
