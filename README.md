@@ -11,7 +11,9 @@ A native android app developed with Jetpack Compose technology. The application 
 * LiveData and MVVM for data management and architecture
 * Kotlin programming language
 
-# Download APK FILE ![here](release/MovieVault.apk "download")
+# Download APK FILE 
+
+Download the Application <a href="release/MovieVault.apk" title="Download" download>here</a>.
 
 ## Some features and UI Flow
 
